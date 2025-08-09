@@ -1,8 +1,34 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plane, Search, MapPin, Calendar } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Plane, Search, MapPin, Calendar, Zap, RefreshCw } from "lucide-react";
 import heroAirplane from "@/assets/hero-airplane.jpg";
+import FlightSearchForm from "./FlightSearchForm";
+import FlightSearchResults from "./FlightSearchResults";
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  onFlightSearch?: (data: any) => void;
+}
+
+const HeroSection = ({ onFlightSearch }: HeroSectionProps) => {
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchData, setSearchData] = useState<any>(null);
+  const [showResults, setShowResults] = useState(false);
+  const [autoUpdate, setAutoUpdate] = useState(true);
+
+  const handleSearch = async (data: any) => {
+    setIsSearching(true);
+    setSearchData(data);
+    setShowResults(false);
+    
+    // Simulate API call delay
+    setTimeout(() => {
+      setIsSearching(false);
+      setShowResults(true);
+      onFlightSearch?.(data);
+    }, 2000);
+  };
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-hero">
       {/* Background Image */}
@@ -32,62 +58,40 @@ const HeroSection = () => {
         {/* Main Hero Content */}
         <div className="max-w-4xl mx-auto mb-12 animate-slide-up">
           <h2 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-            Find Your
+            Real-Time
             <span className="block bg-gradient-premium bg-clip-text text-transparent">
-              Perfect Flight
+              Flight Search
             </span>
           </h2>
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-2xl mx-auto">
-            Discover amazing flight deals with our auto fare system. Best prices, instant booking, worldwide destinations.
+            Search live flights with auto-updating prices. Real airlines, real prices, instant results.
           </p>
         </div>
 
-        {/* Quick Search Card */}
-        <div className="max-w-4xl mx-auto bg-white/95 backdrop-blur-sm rounded-2xl p-6 md:p-8 shadow-premium animate-slide-up" style={{ animationDelay: '0.3s' }}>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg">
-              <MapPin className="w-5 h-5 text-primary" />
-              <div className="text-left">
-                <p className="text-sm text-muted-foreground">From</p>
-                <p className="font-semibold">New York</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg">
-              <MapPin className="w-5 h-5 text-primary" />
-              <div className="text-left">
-                <p className="text-sm text-muted-foreground">To</p>
-                <p className="font-semibold">Tokyo</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg">
-              <Calendar className="w-5 h-5 text-primary" />
-              <div className="text-left">
-                <p className="text-sm text-muted-foreground">Departure</p>
-                <p className="font-semibold">Dec 25</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg">
-              <Calendar className="w-5 h-5 text-primary" />
-              <div className="text-left">
-                <p className="text-sm text-muted-foreground">Return</p>
-                <p className="font-semibold">Jan 5</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button variant="hero" size="lg" className="flex-1">
-              <Search className="w-5 h-5" />
-              Search Flights
-            </Button>
-            <Button variant="outline" size="lg">
-              Advanced Search
-            </Button>
+        {/* Flight Search Form */}
+        <div className="max-w-6xl mx-auto animate-slide-up" style={{ animationDelay: '0.3s' }}>
+          <FlightSearchForm onSearch={handleSearch} isLoading={isSearching} />
+        </div>
+
+        {/* Auto Update Toggle */}
+        <div className="max-w-4xl mx-auto mt-6 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+          <div className="flex items-center justify-center space-x-3 bg-white/10 backdrop-blur-sm rounded-lg p-4">
+            <RefreshCw className={`w-5 h-5 text-white ${autoUpdate ? 'animate-spin' : ''}`} />
+            <Label htmlFor="auto-update" className="text-white font-medium">
+              Auto-update prices every 5 seconds
+            </Label>
+            <Switch
+              id="auto-update"
+              checked={autoUpdate}
+              onCheckedChange={setAutoUpdate}
+              className="data-[state=checked]:bg-accent"
+            />
+            <Zap className="w-4 h-4 text-accent" />
           </div>
         </div>
 
         {/* Stats */}
-        <div className="max-w-2xl mx-auto mt-12 grid grid-cols-3 gap-8 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+        <div className="max-w-2xl mx-auto mt-12 grid grid-cols-3 gap-8 animate-fade-in" style={{ animationDelay: '0.9s' }}>
           <div className="text-center">
             <div className="text-3xl font-bold text-white mb-2">500+</div>
             <div className="text-white/80">Airlines</div>
@@ -97,11 +101,24 @@ const HeroSection = () => {
             <div className="text-white/80">Destinations</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold text-white mb-2">24/7</div>
-            <div className="text-white/80">Support</div>
+            <div className="text-3xl font-bold text-white mb-2">Live</div>
+            <div className="text-white/80">Updates</div>
           </div>
         </div>
       </div>
+
+      {/* Search Results Section */}
+      {(showResults || isSearching) && (
+        <div className="mt-16 bg-white/95 backdrop-blur-sm">
+          <div className="container mx-auto px-4 py-12">
+            <FlightSearchResults 
+              isLoading={isSearching} 
+              searchData={searchData} 
+              autoUpdate={autoUpdate}
+            />
+          </div>
+        </div>
+      )}
     </section>
   );
 };
